@@ -15,9 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from printer.views import get_printers
+from printer.views import printers_api
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('printers', get_printers),
+    path('printers', printers_api),
 ]
