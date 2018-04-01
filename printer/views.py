@@ -34,6 +34,7 @@ def contact_api(request):
     elif request.method == "POST":
         body = json.loads(request.body)
         serializer = ContactSerializer(data=body)
+        serializer.is_valid()
         return JsonResponse(serializer.save())
 
 

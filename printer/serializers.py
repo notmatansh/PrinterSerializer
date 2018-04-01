@@ -24,7 +24,7 @@ class ContactSerializer(NestingSerializer, ModelSerializer):
     class Meta:
         # ‘model’ and ‘fields’ are options for the ModelSerializer
         model = Contact
-        fields = ['id', ]
+        fields = ['id', 'first_name', 'last_name', 'id_number', 'city', 'street', 'house_number', 'apartment_number']
         # the field id was not in the initial setup but in order to support updating and not just
         # getting and creating i needed a unique attribute to be passed over the API
 

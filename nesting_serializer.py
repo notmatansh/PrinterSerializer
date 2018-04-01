@@ -1,26 +1,15 @@
 from rest_framework.serializers import Serializer
 from rest_framework.utils.serializer_helpers import ReturnDict
-from django.db.utils import IntegrityError
 
 
 class NestingSerializer(Serializer):
     nesting = {}  # inheriting serializers need to specify a new field name and fields to nest in it
 
-    def save(self, **kwargs):
-        """
-
-        Args:
-            **kwargs:
-
-        Returns:
-            dict
-        """
-        data = self.initial_data
+    def is_valid(self, raise_exception=False):
         flattened_data = {}
         api_fields = getattr(self.Meta, 'fields')
-        model = getattr(self.Meta, 'model')
 
-        for key, value in data.items():
+        for key, value in self.initial_data.items():
             if key in self.nesting:
                 if isinstance(value, dict):
                     for field_name, field_value in value.items():
@@ -30,24 +19,35 @@ class NestingSerializer(Serializer):
             elif key in api_fields:
                 flattened_data[key] = value
 
-        if 'id' in flattened_data:
-            obj_id = flattened_data.pop('id')
+        self._validated_data = flattened_data
+        # I cant call the .is_valid() method on NestingSerializer's super (Serializer) because it wont support the
+        # scenario where our model has a unique field, so we have to "play its part"
 
+    def create(self, validated_data):
+        model = getattr(self.Meta, 'model')
+        new_obj = model.objects.create(**validated_data)
+        # retuning a dict of the created object
+        validated_data['id'] = new_obj.id
+        return validated_data
+
+    def update(self, instance, validated_data):
+        for k, v in validated_data.items():
+            setattr(instance, k, v)
+        instance.save()
+        # retuning a dict of the updated object
+        validated_data['id'] = instance.id
+        return validated_data
+
+    def save(self, **kwargs):
+        model = getattr(self.Meta, 'model')
+        data = self.validated_data
+        if 'id' in data:
+            obj_id = data.pop('id')
             if model.objects.filter(id=obj_id).exists():
-                # updating an existing object
                 obj = model.objects.get(id=obj_id)
-                for k, v in flattened_data.items():
-                    setattr(obj, k, v)
-                obj.save()
-                # retuning a dict of the updated object
-                flattened_data['id'] = obj_id
-                return flattened_data
+                return self.update(obj, data)
 
-        # if we don't have an object with the specified id we will create it but ignore the id passed in the API
-        # if an id was not passed via the API then we just create a new object with given data
-        new_obj = model.objects.create(**flattened_data)
-        flattened_data['id'] = new_obj.id
-        return flattened_data
+        return self.create(data)
 
     @property
     def data(self):
