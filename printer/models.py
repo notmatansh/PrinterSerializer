@@ -20,6 +20,8 @@ class Contact(models.Model):
     city = models.CharField(max_length=300)
     street = models.CharField(max_length=300)
     house_number = models.IntegerField()
+    apartment_floor = models.IntegerField(default=0)
+    house_entrance = models.CharField(max_length=10, blank=True)
     apartment_number = models.IntegerField()
 
     def __str__(self):
