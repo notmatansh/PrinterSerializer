@@ -4,11 +4,14 @@ from printer.models import Printer, Contact
 
 
 class PrinterSerializer(NestingSerializer, ModelSerializer):
+    """
+    the serializer object given by the practice, only change i did was to add the id field
+    """
     class Meta:
         # ‘model’ and ‘fields’ are options for the ModelSerializer
         model = Printer
         fields = ['id', 'name', 'min_production_time', 'max_production_time']
-        # the field id was not in the initial setup but in order to support updating and not just
+        # the field id was not in the initial practice setup but in order to support updating and not just
         # getting and creating i needed a unique attribute to be passed over the API
 
     # The ‘nesting’ option should be used by the NestingSerializer
@@ -21,6 +24,9 @@ class PrinterSerializer(NestingSerializer, ModelSerializer):
 
 
 class ContactSerializer(NestingSerializer, ModelSerializer):
+    """
+    a more complex serializer with a more complex data model to test and improve the NestingSerializer implementation
+    """
     class Meta:
         # ‘model’ and ‘fields’ are options for the ModelSerializer
         model = Contact
